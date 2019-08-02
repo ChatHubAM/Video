@@ -28,24 +28,24 @@
         /// </summary>
         private void InitializeComponent()
         {
-			this.pictureBox1 = new System.Windows.Forms.PictureBox();
+			this.senderBox = new System.Windows.Forms.PictureBox();
 			this.cmbVideoSource = new System.Windows.Forms.ComboBox();
 			this.label1 = new System.Windows.Forms.Label();
 			this.btnStart = new System.Windows.Forms.Button();
 			this.btnStop = new System.Windows.Forms.Button();
-			this.pictureBox2 = new System.Windows.Forms.PictureBox();
-			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+			this.receiverBox = new System.Windows.Forms.PictureBox();
+			((System.ComponentModel.ISupportInitialize)(this.senderBox)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.receiverBox)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// pictureBox1
 			// 
-			this.pictureBox1.Location = new System.Drawing.Point(404, 338);
-			this.pictureBox1.Name = "pictureBox1";
-			this.pictureBox1.Size = new System.Drawing.Size(236, 149);
-			this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-			this.pictureBox1.TabIndex = 0;
-			this.pictureBox1.TabStop = false;
+			this.senderBox.Location = new System.Drawing.Point(404, 338);
+			this.senderBox.Name = "senderBox";
+			this.senderBox.Size = new System.Drawing.Size(236, 149);
+			this.senderBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+			this.senderBox.TabIndex = 0;
+			this.senderBox.TabStop = false;
 			// 
 			// cmbVideoSource
 			// 
@@ -88,30 +88,30 @@
 			this.btnStop.UseVisualStyleBackColor = true;
 			this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
 			// 
-			// pictureBox2
+			// receiverBox
 			// 
-			this.pictureBox2.Location = new System.Drawing.Point(15, 12);
-			this.pictureBox2.Name = "pictureBox2";
-			this.pictureBox2.Size = new System.Drawing.Size(300, 200);
-			this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-			this.pictureBox2.TabIndex = 5;
-			this.pictureBox2.TabStop = false;
+			this.receiverBox.Location = new System.Drawing.Point(15, 12);
+			this.receiverBox.Name = "receiverBox";
+			this.receiverBox.Size = new System.Drawing.Size(300, 200);
+			this.receiverBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+			this.receiverBox.TabIndex = 5;
+			this.receiverBox.TabStop = false;
 			// 
 			// VideoForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(640, 534);
-			this.Controls.Add(this.pictureBox2);
+			this.Controls.Add(this.receiverBox);
 			this.Controls.Add(this.btnStop);
 			this.Controls.Add(this.btnStart);
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this.cmbVideoSource);
-			this.Controls.Add(this.pictureBox1);
+			this.Controls.Add(this.senderBox);
 			this.Name = "VideoForm";
 			this.Text = "Form1";
-			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.senderBox)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.receiverBox)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -119,12 +119,12 @@
 
         #endregion
 
-        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.PictureBox senderBox;
         private System.Windows.Forms.ComboBox cmbVideoSource;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnStart;
         private System.Windows.Forms.Button btnStop;
-		private System.Windows.Forms.PictureBox pictureBox2;
+		private System.Windows.Forms.PictureBox receiverBox;
 	}
 }
 
