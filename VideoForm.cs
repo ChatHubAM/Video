@@ -199,5 +199,10 @@ namespace AForge.WindowsForms
 
 			return null;
 		}
-	}
+
+        private void VideoForm_Load(object sender, EventArgs e)
+        {
+
+        }
+    }
 }
