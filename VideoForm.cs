@@ -1,18 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Media.Imaging;
 using AForge.Video;
 using AForge.Video.DirectShow;
 
@@ -23,11 +17,9 @@ namespace AForge.WindowsForms
 		Socket sendSocket;
 		byte[] sendBuffer;
 		Socket sizeSenderSocket;
-		byte[] sizeBuffer;
-		//const string ip = "127.0.0.1";
+		byte[] sizeSenderBuffer;
 		const string ip = "192.168.0.11";
 		const int port = 9873;
-		//const int port = 9786;
 		IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(ip), port);
 		IPEndPoint sizeSendEndPoint = new IPEndPoint(IPAddress.Parse(ip), 10002);
 		IPEndPoint receiveEndPoint = new IPEndPoint(IPAddress.Any, 9786);
@@ -35,12 +27,14 @@ namespace AForge.WindowsForms
 		private FilterInfoCollection videoDevicesList;
 		private IVideoSource videoSource;
 
+
 		public VideoForm()
 		{
 			InitializeComponent();
+			// Calls Listener method(described below) in separate thread
 			Thread clientthread = new Thread(Listener);
 			clientthread.Start();
-			// get list of video devices
+			// Gets list of video devices
 			videoDevicesList = new FilterInfoCollection(FilterCategory.VideoInputDevice);
 			foreach (FilterInfo videoDevice in videoDevicesList)
 			{
@@ -54,51 +48,45 @@ namespace AForge.WindowsForms
 			{
 				MessageBox.Show("No video sources found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
-			// stop the camera on window close
+			// Stops the camera on window close
 			this.Closing += Form1_Closing;
 		}
 
+		//Defines actions,happening after closing the form: Stops the camera
 		private void Form1_Closing(object sender, CancelEventArgs e)
-		{
-			// signal to stop
-			//ClosingConnections();
+		{			
 			if (videoSource != null && videoSource.IsRunning)
 			{
 				videoSource.SignalToStop();
 			}
 		}
-
+		//Gets the camera's taken image, sets it to senderBox, and, preventing senderBox from reuse, calls VideoSender method(described below)
 		private void video_NewFrame(object sender, NewFrameEventArgs eventArgs)
-		{
-			//			Thread.Sleep(1000);
-			//Thread t = new Thread(VideoSender);
-			//t.Start();
-			Bitmap bitmap = (Bitmap)eventArgs.Frame.Clone();
-			pictureBox1.Image = bitmap;
-			//Thread listenerThread = new Thread(InvokingListener);
-			//listenerThread.Start();
-			if (pictureBox1.InvokeRequired) { pictureBox1.Invoke(new MethodInvoker(() => VideoSender())); } else VideoSender();						
+		{			
+			Bitmap bitmap = (Bitmap)eventArgs.Frame.Clone();			
+			senderBox.Image = bitmap;
+			if (senderBox.InvokeRequired) { senderBox.Invoke(new MethodInvoker(() => VideoSender())); } else VideoSender();						
 		}
+		//Defines actions,happening after clicking the Start button:Calls OpenConnections method(described below) and Starts the camera
 		private void btnStart_Click(object sender, EventArgs e)
 		{
-			GettingConnection();
+			OpenConnections();
 			videoSource = new VideoCaptureDevice(videoDevicesList[cmbVideoSource.SelectedIndex].MonikerString);
 			videoSource.NewFrame += new NewFrameEventHandler(video_NewFrame);		
 			videoSource.Start();
-			//if (pictureBox1.InvokeRequired) { pictureBox1.Invoke(new MethodInvoker(() => VideoSender())); } else VideoSender();
-			//VideoSender();
 		}
-
+		//Defines actions,happening after clicking the Stop button:Stops the camera,calls CloseConnections method(described below),disposes senderBox's image
 		private void btnStop_Click(object sender, EventArgs e)
 		{
 			videoSource.SignalToStop();
-			ClosingConnections();
-			if (videoSource != null && videoSource.IsRunning && pictureBox1.Image != null)
+			CloseConnections();
+			if (videoSource != null && videoSource.IsRunning && senderBox.Image != null)
 			{
-				pictureBox1.Image.Dispose();
+				senderBox.Image.Dispose();
 			}
 		}
-
+		
+		//Always listens to the particular endpoint, receives images converted into bytes, reconverts them into images,sets images to receiverBox
 		private void Listener()
 		{
 			byte[] buffer;
@@ -118,11 +106,10 @@ namespace AForge.WindowsForms
 							MemoryStream stream;
 							while (true)
 							{
-								//Thread.Sleep(4);
 								sizeClient.Receive(sizeBuffer);								
 								buffer = ReceiveLargeFile(client, BitConverter.ToInt32(sizeBuffer, 0));
 								stream = new MemoryStream(buffer);
-								pictureBox2.Image = Image.FromStream(stream);
+								receiverBox.Image = Image.FromStream(stream);
 								stream.Position = 0;
 							}
 						}
@@ -130,92 +117,92 @@ namespace AForge.WindowsForms
 				}
 			}
 		}
+		//Receives large data, prevents any data loss
 		private byte[] ReceiveLargeFile(Socket socket, int lenght)
 		{
-			// send first the length of total bytes of the data to server
-			// create byte array with the length that you've send to the server.
 			byte[] data = new byte[lenght];
 
+			int size = lenght;
+			var total = 0; 
+			var dataleft = size; 
 
-			int size = lenght; // lenght to reveive
-			var total = 0; // total bytes to received
-			var dataleft = size; // bytes that havend been received 
-
-			// 1. check if the total bytes that are received < than the size you've send before to the server.
-			// 2. if true read the bytes that have not been receive jet
 			while (total < size)
 			{
-				// receive bytes in byte array data[]
-				// from position of total received and if the case data that havend been received.
 				var recv = socket.Receive(data, total, dataleft, SocketFlags.None);
-				if (recv == 0) // if received data = 0 than stop reseaving
+				if (recv == 0) 
 				{
 					data = null;
 					break;
 				}
-				total += recv;  // total bytes read + bytes that are received
-				dataleft -= recv; // bytes that havend been received
+				total += recv;  
+				dataleft -= recv;
 			}
-			return data; // return byte array and do what you have to do whith the bytes.
+
+			return data; 
 		}		
+		//Converts images into bytes,sends them to the particular endpoint
 		private void VideoSender()
 		{
-			if (pictureBox1.Image != null)
+			if (senderBox.Image != null)
 			{
-				//Thread.Sleep(4);
-				var size = SizeCounter(pictureBox1.Image);
+				var size = SizeCounter(senderBox.Image);
 				sendBuffer = new byte[size];
-				sizeBuffer = BitConverter.GetBytes(size);
+				sizeSenderBuffer = BitConverter.GetBytes(size);
 				MemoryStream stream = new MemoryStream(sendBuffer);
-				//pictureBox1.Image.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
-				SaveJpeg(stream, pictureBox1.Image, 30);
+				SaveJpeg(stream, senderBox.Image, 30);
 				sendSocket.Send(sendBuffer);
-				sizeSenderSocket.Send(sizeBuffer);
+				sizeSenderSocket.Send(sizeSenderBuffer);
 				stream.Position = 0;
 			}
 		}
+		//Counts the size of the given image in bytes
 		private int SizeCounter(Image img)
 		{
 			MemoryStream sizeStream = new MemoryStream();
 			img.Save(sizeStream, System.Drawing.Imaging.ImageFormat.Jpeg);
 			return sizeStream.ToArray().Length;
 		}
-		private void GettingConnection()
+		//Sets up necessary conections
+		private void OpenConnections()
 		{
 			sendSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);			
 			sendSocket.Connect(endPoint);
 			sizeSenderSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 			sizeSenderSocket.Connect(sizeSendEndPoint);
 		}
-		public void ClosingConnections()
+		//Closes connections after using
+		public void CloseConnections()
 		{
 			sendSocket.Shutdown(SocketShutdown.Both);
 			sendSocket.Close();
 		}
+		//Saves image(in jpeg format) in given stream with chosen quality
 		public static void SaveJpeg(MemoryStream stream, Image img, int quality)
 		{
 			if (quality < 0 || quality > 100)
 				throw new ArgumentOutOfRangeException("quality must be between 0 and 100.");
 
-			// Encoder parameter for image quality 
 			EncoderParameter qualityParam = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, quality);
-			// JPEG image codec 
 			ImageCodecInfo jpegCodec = GetEncoderInfo("image/jpeg");
 			EncoderParameters encoderParams = new EncoderParameters(1);
 			encoderParams.Param[0] = qualityParam;
 			img.Save(stream, jpegCodec, encoderParams);
 		}
+		// Gets image codecs for all image formats, finds the correct image codec
 		private static ImageCodecInfo GetEncoderInfo(string mimeType)
 		{
-			// Get image codecs for all image formats 
 			ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
-
-			// Find the correct image codec 
+			
 			for (int i = 0; i < codecs.Length; i++)
 				if (codecs[i].MimeType == mimeType)
 					return codecs[i];
 
 			return null;
 		}
-	}
+
+        private void VideoForm_Load(object sender, EventArgs e)
+        {
+
+        }
+    }
 }
